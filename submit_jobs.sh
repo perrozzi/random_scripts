@@ -14,7 +14,7 @@ perl -pi -e '$_ .= qq(echo "process.RandomNumberGeneratorService.externalLHEProd
 # launch the test request script
 sh ${2}
 
-outputdir=/eos/cms/store/group/phys_generator/14TEV/PhaseIISummer17
+outputdir=${3}
 # create remote directory
 mkdir ${outputdir}/${1}
 

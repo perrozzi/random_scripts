@@ -1,7 +1,7 @@
 import os, sys
 
 # outputdir = "/eos/cms/store/group/phys_generator/14TEV/PhaseIISummer17"
-outputdir = "/eos/cms/store/group/upgrade/PhaseIISummer17/"
+outputdir = "/eos/cms/store/group/upgrade/PhaseIISummer17/" 
 evts_per_job = 10000
 submit_datasets = [ # prepid                                 total_n_evts
                     # ['TOP-PhaseIISummer17wmLHEGENOnly-00021',200000], # DONE
@@ -25,4 +25,4 @@ for dataset in submit_datasets:
     print  "submitting "+str(njobs)+" jobs"
     os.system("sleep 2")
     for i in range(1,njobs):
-        os.system("bsub -u ciaociao1 -q 1nd submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+"; sleep 1")
+        os.system("bsub -u ciaociao1 -q 1nd submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+"; sleep 1")
