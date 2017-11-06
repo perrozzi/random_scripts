@@ -1,28 +1,62 @@
-import os, sys
+import os, sys, ROOT, glob
+
+just_check_entries = False
+
+queue = "1nd"
 
 # outputdir = "/eos/cms/store/group/phys_generator/14TEV/PhaseIISummer17"
-outputdir = "/eos/cms/store/group/upgrade/PhaseIISummer17/" 
-evts_per_job = 10000
-submit_datasets = [ # prepid                                 total_n_evts
-                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00021',200000], # DONE
-                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00024',1000000], # DONE
-                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00026',1000000], # DONE
-                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00027',7000000], # DONE
+# outputdir = "/eos/cms/store/group/phys_generator/perrozzi/MinBiasCentralDiffraction"
+outputdir = "/eos/cms/store/group/upgrade/PhaseIISummer17/"
+
+evts_per_job = 30000
+submit_datasets = [ # prepid                           total_n_evts, matching*filter efficiency
+                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00021',200000,1], # DONE
+                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00024',1000000,1], # DONE
+                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00026',1000000,1], # DONE
+                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00027',7000000,1], # DONE
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00002',5000000], # DONE
-                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00025',2000000], # GRIDPACK NON EXISTING
-                    ['SMP-PhaseIISummer17wmLHEGENOnly-00004',20000000],
-                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00005',20000000],
-                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00007',20000000],
-                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00008',20000000],
-                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00009',20000000],
+                    # ['TOP-PhaseIISummer17wmLHEGENOnly-00025',2000000,1], # GRIDPACK NON EXISTING
+                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00004',20000000,0.27], # DONE
+                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00005',20000000,0.129], # DONE
+                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00007',20000000,0.693], # DONE
+                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00008',20000000,0.272], # DONE
+                    ['SMP-PhaseIISummer17wmLHEGENOnly-00009',20000000,0.109], # DONE
+                    # ['PPD-RunIIFall17GS-00005',10000000,1],
+                    # ['PPD-RunIIFall17GS-00007',5000000,1],
                   ]
 
 for dataset in submit_datasets:
+    print "analyzing dataset",str(dataset)
     # create output dir already now to avoid permission issues
-    os.system("mkdir "+outputdir+"/"+dataset[0])
-    # compute the number of jobs + 5% to account for some efficiency loss
-    njobs = int(float(dataset[1])/float(evts_per_job)*1.05)
-    print  "submitting "+str(njobs)+" jobs"
-    os.system("sleep 2")
-    for i in range(1,njobs):
-        os.system("bsub -u ciaociao1 -q 1nd submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+"; sleep 1")
+    if not os.path.isdir(outputdir+"/"+dataset[0]):
+        os.system("mkdir "+outputdir+"/"+dataset[0])
+    # check for existing files
+    files = glob.glob(outputdir+"/"+dataset[0]+"/"+dataset[0]+"-*")
+    print"found",len(files),"files"
+    sys.stdout.flush()
+    if just_check_entries:
+        chain = ROOT.TChain("Events")
+        for file in files:
+            chain.Add(file)
+        produced_events = chain.GetEntries()
+        print "produced events:",str(produced_events),"/",str(dataset[1]),"i.e.",str(float(produced_events)/float(dataset[1])*100),"%"
+        sys.stdout.flush()
+    else:
+        produced_events = 0
+        # compute the number of jobs + 5% to account for some efficiency loss
+        n_events = float(float(dataset[1])-float(produced_events))
+        effective_evts_per_job = float(evts_per_job*float(dataset[2]))
+        print "matching*filter efficiency:",dataset[2],"effective number of events per job:",str(effective_evts_per_job)
+        njobs = int(n_events/float(effective_evts_per_job)*1.05)-int(len(files))
+        print  "submitting "+str(njobs)+" jobs to produce",n_events,"events"
+        os.system("sleep 2")
+        for i in range(1,njobs):
+            os.system("bsub -u ciaociao1 -C 0 -q "+queue+" submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+"; sleep 5; rm -rf LSFJOB_* core.*")
+            if i % 100 == 0:
+                  os.system("echo 'submitted "+str(i)+" jobs, sleeping 3 minutes'; sleep 200")
+    sys.stdout.flush()
+
+os.system("echo 'submission complete'")
+
+while True:
+    os.system("rm -rf LSFJOB_* core.*; sleep 30")
