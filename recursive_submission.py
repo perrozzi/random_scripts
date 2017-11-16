@@ -1,6 +1,7 @@
 import os, sys, ROOT, glob
 
-just_check_entries = False
+just_check_entries = True
+string_to_filter_files = "inRAWSIM" # for example "inRAWSIM"
 
 queue = "1nd"
 
@@ -20,7 +21,8 @@ submit_datasets = [ # prepid                           total_n_evts, matching*fi
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00005',20000000,0.129], # DONE
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00007',20000000,0.693], # DONE
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00008',20000000,0.272], # DONE
-                    ['SMP-PhaseIISummer17wmLHEGENOnly-00009',20000000,0.109], # DONE
+                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00009',20000000,0.109], # DONE
+                    ['SMP-PhaseIISummer17wmLHEGENOnly-00011',5000000,0.32], # DONE
                     # ['PPD-RunIIFall17GS-00005',10000000,1],
                     # ['PPD-RunIIFall17GS-00007',5000000,1],
                   ]
@@ -30,8 +32,9 @@ for dataset in submit_datasets:
     # create output dir already now to avoid permission issues
     if not os.path.isdir(outputdir+"/"+dataset[0]):
         os.system("mkdir "+outputdir+"/"+dataset[0])
+    print "output dir: "+outputdir+"/"+dataset[0]
     # check for existing files
-    files = glob.glob(outputdir+"/"+dataset[0]+"/"+dataset[0]+"-*")
+    files = glob.glob(outputdir+"/"+dataset[0]+"/"+dataset[0]+"*"+string_to_filter_files+"*")
     print"found",len(files),"files"
     sys.stdout.flush()
     if just_check_entries:
