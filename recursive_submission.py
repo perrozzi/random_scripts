@@ -1,15 +1,20 @@
 import os, sys, ROOT, glob
 
-just_check_entries = True
-string_to_filter_files = "inRAWSIM" # for example "inRAWSIM"
+GenOnly = True
+
+# just_check_entries = True
+just_check_entries = False
+string_to_filter_files = "" # for example "inRAWSIM"
 
 queue = "1nd"
 
 # outputdir = "/eos/cms/store/group/phys_generator/14TEV/PhaseIISummer17"
 # outputdir = "/eos/cms/store/group/phys_generator/perrozzi/MinBiasCentralDiffraction"
-outputdir = "/eos/cms/store/group/upgrade/PhaseIISummer17/"
+# outputdir = "/eos/cms/store/group/upgrade/PhaseIISummer17/"
+# outputdir = "/tmp/perrozzi"
+outputdir = "/eos/cms/store/group/phys_generator/perrozzi/"
 
-evts_per_job = 30000
+evts_per_job = 200000
 submit_datasets = [ # prepid                           total_n_evts, matching*filter efficiency
                     # ['TOP-PhaseIISummer17wmLHEGENOnly-00021',200000,1], # DONE
                     # ['TOP-PhaseIISummer17wmLHEGENOnly-00024',1000000,1], # DONE
@@ -22,9 +27,14 @@ submit_datasets = [ # prepid                           total_n_evts, matching*fi
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00007',20000000,0.693], # DONE
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00008',20000000,0.272], # DONE
                     # ['SMP-PhaseIISummer17wmLHEGENOnly-00009',20000000,0.109], # DONE
-                    ['SMP-PhaseIISummer17wmLHEGENOnly-00011',5000000,0.32], # DONE
+                    # ['SMP-PhaseIISummer17wmLHEGENOnly-00011',5000000,0.32], # DONE
                     # ['PPD-RunIIFall17GS-00005',10000000,1],
                     # ['PPD-RunIIFall17GS-00007',5000000,1],
+                    # ['B2G-RunIISummer17wmLHEGS-00002',50000,1],
+                    # ['HIG-RunIIFall17wmLHEGS-00597',1000000,(0.2*0.01)],
+                    # ['HIG-RunIIFall17wmLHEGS-00598',1000000,(0.3*0.3688)],
+                    ['HIG-RunIIFall17wmLHEGS-00599',1000000,(0.3*0.6117)],
+                    # ['HIG-RunIIFall17wmLHEGS-00600',1000000,(0.2*0.004)],
                   ]
 
 for dataset in submit_datasets:
@@ -54,7 +64,9 @@ for dataset in submit_datasets:
         print  "submitting "+str(njobs)+" jobs to produce",n_events,"events"
         os.system("sleep 2")
         for i in range(1,njobs):
-            os.system("bsub -u ciaociao1 -C 0 -q "+queue+" submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+"; sleep 5; rm -rf LSFJOB_* core.*")
+            print("bsub -u ciaociao1 -C 0 -q "+queue+" submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+" "+int(GenOnly))
+            os.system("bsub -u ciaociao1 -C 0 -q "+queue+" submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+" "+int(GenOnly)+"; sleep 5; rm -rf LSFJOB_* core.*")
+            # os.system("sh submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir)
             if i % 100 == 0:
                   os.system("echo 'submitted "+str(i)+" jobs, sleeping 3 minutes'; sleep 200")
     sys.stdout.flush()

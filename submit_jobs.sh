@@ -3,7 +3,12 @@
 # sh submit_jobs.sh TOP-PhaseIISummer17wmLHEGENOnly-00024 100000
 
 # retrieve test request script with a given number of events (the downloaded script name will be the number of events...)
-wget https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_test/${1}/${2}
+wget https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_test/${1}/${2} -O ${2}
+
+if [ "${4}" -eq "1" ]; then
+   echo "Forcing GenOnly"
+   sed -i 's/GEN,SIM/GEN/g' ${2}
+fi
 
 # pick up a random seed from bash
 rndm=${RANDOM}
