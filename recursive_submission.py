@@ -14,7 +14,7 @@ queue = "1nd"
 # outputdir = "/tmp/perrozzi"
 outputdir = "/eos/cms/store/group/phys_generator/perrozzi/"
 
-evts_per_job = 200000
+evts_per_job = 50000
 submit_datasets = [ # prepid                           total_n_evts, matching*filter efficiency
                     # ['TOP-PhaseIISummer17wmLHEGENOnly-00021',200000,1], # DONE
                     # ['TOP-PhaseIISummer17wmLHEGENOnly-00024',1000000,1], # DONE
@@ -63,7 +63,7 @@ for dataset in submit_datasets:
         njobs = int(n_events/float(effective_evts_per_job)*1.05)-int(len(files))
         print  "submitting "+str(njobs)+" jobs to produce",n_events,"events"
         os.system("sleep 2")
-        for i in range(1,njobs):
+        for i in range(0,njobs):
             print("bsub -u ciaociao1 -C 0 -q "+queue+" submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+" "+int(GenOnly))
             os.system("bsub -u ciaociao1 -C 0 -q "+queue+" submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir+" "+int(GenOnly)+"; sleep 5; rm -rf LSFJOB_* core.*")
             # os.system("sh submit_jobs.sh "+dataset[0]+" "+str(evts_per_job)+" "+outputdir)
